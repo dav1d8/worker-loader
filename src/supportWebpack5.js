@@ -54,12 +54,17 @@ export default function runAsChild(
           workerSource = workerSource.replace(sourceURLWebpackRegex, "");
         }
 
-        const workerCode = workerGenerator(
+        let workerCode = workerGenerator(
           loaderContext,
           workerFilename,
           workerSource,
           options
         );
+		if (workerFilename.endsWith(".worker.js") && !workerFilename.endsWith(".worker.worker.js")){
+          workerCode = workerCode.replace("return new", "const Worker = require(\"worker_threads\").Worker; return new");
+          workerCode = workerCode.replace("__webpack_public_path__", "\"./dist/\"");
+          //workerCode = workerCode.replace(".worker.js\"", ".worker.worker.js\"");
+        }
         const workerCodeBuffer = Buffer.from(workerCode);
 
         return cache.store(
